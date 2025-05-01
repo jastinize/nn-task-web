@@ -7,50 +7,59 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
       margin: 0;
       padding: 30px;
     }
     h1 {
       text-align: center;
-      color: #2c3e50;
+      color: #00796b;
+      font-size: 2rem;
+      margin-bottom: 25px;
     }
     .section {
       background: #ffffff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto 30px auto;
     }
     label {
-      font-weight: bold;
-      margin-top: 10px;
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
     }
     input, select {
-      padding: 8px;
+      padding: 10px;
       margin-bottom: 15px;
-      border-radius: 5px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       width: 100%;
       box-sizing: border-box;
+      font-size: 1rem;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       background-color: #007acc;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
     }
     button:hover {
       background-color: #005fa3;
     }
     .results {
       background: #ffffff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      max-width: 800px;
+      margin: 0 auto;
     }
     .fade-step {
       opacity: 0;
@@ -60,32 +69,41 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 15px;
     }
     th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
+      border: 1px solid #ccc;
+      padding: 12px;
       text-align: center;
+      font-size: 0.95rem;
     }
     th {
       background-color: #007acc;
       color: white;
     }
     @keyframes fadein {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     #activation-desc {
-      background: #fff8c4;
-      padding: 10px;
-      border-left: 5px solid #ffcc00;
+      background: #fff3cd;
+      padding: 15px;
+      border-left: 5px solid #ffc107;
+      border-radius: 6px;
       margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .results h3 {
+      color: #00796b;
+      margin-bottom: 15px;
+    }
+    .fade-step strong {
+      color: #37474f;
     }
   </style>
 </head>
 <body>
   <h1>Neural Network: Will the Customer Buy Organic Products?</h1>
-
   <div class="section">
     <div id="activation-desc">
       <strong>Evaluation Function:</strong><br>
@@ -117,27 +135,19 @@
   <div class="results" id="output"></div>
 
   <script>
-    function sigmoid(x) {
-      return 1 / (1 + Math.exp(-x));
-    }
-    function relu(x) {
-      return Math.max(0, x);
-    }
-    function tanh(x) {
-      return Math.tanh(x);
-    }
-    function normalize(value, min, max) {
-      return (value - min) / (max - min);
-    }
+    function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+    function relu(x) { return Math.max(0, x); }
+    function tanh(x) { return Math.tanh(x); }
+    function normalize(value, min, max) { return (value - min) / (max - min); }
+
     function showActivationDescription() {
       const func = document.getElementById("activation").value;
-      const box = document.getElementById("activation-desc");
       const desc = document.getElementById("function-text");
       if (func === "sigmoid") {
         desc.innerHTML = "<em>Sigmoid:</em> f(x) = 1 / (1 + e<sup>-x</sup>)";
       } else if (func === "relu") {
         desc.innerHTML = "<em>ReLU:</em> f(x) = max(0, x)";
-      } else if (func === "tanh") {
+      } else {
         desc.innerHTML = "<em>Tanh:</em> f(x) = (e<sup>x</sup> - e<sup>-x</sup>) / (e<sup>x</sup> + e<sup>-x</sup>)";
       }
     }
@@ -162,55 +172,56 @@
       const inputs = [age, gender, income];
 
       const weights = {
-        W1j: 0.20, W1i: 0.10,
-        W2j: 0.30, W2i: -0.10,
-        W3j: -0.10, W3i: 0.20,
-        Wjk: 0.10, Wik: 0.50
+        W1j: 0.20, W1i: 0.10, W2j: 0.30, W2i: -0.10,
+        W3j: -0.10, W3i: 0.20, Wjk: 0.10, Wik: 0.50
       };
 
       const sum_j = inputs[0]*weights.W1j + inputs[1]*weights.W2j + inputs[2]*weights.W3j;
       const sum_i = inputs[0]*weights.W1i + inputs[1]*weights.W2i + inputs[2]*weights.W3i;
 
       let out_j, out_i, out_k;
-      if (func === 'relu') {
-        out_j = relu(sum_j); out_i = relu(sum_i);
-      } else if (func === 'tanh') {
-        out_j = tanh(sum_j); out_i = tanh(sum_i);
-      } else {
-        out_j = sigmoid(sum_j); out_i = sigmoid(sum_i);
-      }
+      if (func === 'relu') { out_j = relu(sum_j); out_i = relu(sum_i); }
+      else if (func === 'tanh') { out_j = tanh(sum_j); out_i = tanh(sum_i); }
+      else { out_j = sigmoid(sum_j); out_i = sigmoid(sum_i); }
 
       const sum_k = out_j*weights.Wjk + out_i*weights.Wik;
-      if (func === 'relu') {
-        out_k = relu(sum_k);
-      } else if (func === 'tanh') {
-        out_k = tanh(sum_k);
-      } else {
-        out_k = sigmoid(sum_k);
+      if (func === 'relu') out_k = relu(sum_k);
+      else if (func === 'tanh') out_k = tanh(sum_k);
+      else out_k = sigmoid(sum_k);
+
+      function calcDetail(i, w, label) {
+        return `${i.toFixed(3)} × ${w} = ${(i * w).toFixed(3)} (${label})`;
       }
 
-      let resultHTML = `<div><h3>Step-by-Step Neural Network Calculation (Animated)</h3>`;
-      resultHTML += step(`<strong>Normalization:</strong> Age = (${ageRaw} - 20) / (60 - 20) = ${age.toFixed(3)}<br>Income = (${incomeRaw} - 1000) / (5000 - 1000) = ${income.toFixed(3)}`, 0.5);
-      resultHTML += step(`<strong>Weights Table:</strong><br>
-        <table><tr><th>W1j</th><th>W1i</th><th>W2j</th><th>W2i</th><th>W3j</th><th>W3i</th><th>Wjk</th><th>Wik</th></tr>
-        <tr><td>${weights.W1j}</td><td>${weights.W1i}</td><td>${weights.W2j}</td><td>${weights.W2i}</td><td>${weights.W3j}</td><td>${weights.W3i}</td><td>${weights.Wjk}</td><td>${weights.Wik}</td></tr></table>`, 1);
-
-      const formula = (name, sum, out) => {
+      function formula(name, sum, out) {
         if (func === 'relu') return `Activated = f(x) = max(0, x)<br>f(${sum.toFixed(3)}) = ${out.toFixed(3)}`;
-        if (func === 'tanh') return `Activated = f(x) = (e<sup>x</sup> - e<sup>-x</sup>) / (e<sup>x</sup> + e<sup>-x</sup>)<br>f(${sum.toFixed(3)}) = ${out.toFixed(3)}`;
+        if (func === 'tanh') return `Activated = f(x) = tanh(x)<br>f(${sum.toFixed(3)}) = ${out.toFixed(3)}`;
         return `Activated = f(x) = 1 / (1 + e<sup>-x</sup>)<br>f(${sum.toFixed(3)}) = ${out.toFixed(3)}`;
-      };
+      }
 
-      resultHTML += step(`<strong>Hidden Node j:</strong><br>Sum = ${sum_j.toFixed(3)}<br>${formula('j', sum_j, out_j)}`, 2);
-      resultHTML += step(`<strong>Hidden Node i:</strong><br>Sum = ${sum_i.toFixed(3)}<br>${formula('i', sum_i, out_i)}`, 3);
-      resultHTML += step(`<strong>Output Node:</strong><br>Sum = ${sum_k.toFixed(3)}<br>${formula('k', sum_k, out_k)}`, 4);
-      resultHTML += step(`<strong>Final Prediction:</strong> ${out_k >= 0.5 ? '✅ Likely to Buy (1)' : '❌ Unlikely to Buy (0)'}`, 5);
+      let resultHTML = `<div><h3>Step-by-Step Neural Network Calculation</h3>`;
+
+      resultHTML += step(`<strong>Weights Table:</strong><br>
+        <table><tr><th>W1j</th><th>W2j</th><th>W3j</th><th>W1i</th><th>W2i</th><th>W3i</th><th>Wjk</th><th>Wik</th></tr>
+        <tr><td>${weights.W1j}</td><td>${weights.W2j}</td><td>${weights.W3j}</td>
+        <td>${weights.W1i}</td><td>${weights.W2i}</td><td>${weights.W3i}</td>
+        <td>${weights.Wjk}</td><td>${weights.Wik}</td></tr></table>`, 0.25);
+
+      resultHTML += step(`<strong>Normalization Calculation:</strong><br>
+        Age = (${ageRaw} - 20) / (60 - 20) = ${age.toFixed(3)}<br>
+        Income = (${incomeRaw} - 1000) / (5000 - 1000) = ${income.toFixed(3)}`, 0.5);
+
+      resultHTML += step(`<strong>Hidden Node j:</strong><br>${calcDetail(inputs[0], weights.W1j, 'age')}<br>${calcDetail(inputs[1], weights.W2j, 'gender')}<br>${calcDetail(inputs[2], weights.W3j, 'income')}<br>Sum = ${sum_j.toFixed(3)}<br>${formula('j', sum_j, out_j)}`, 1);
+      resultHTML += step(`<strong>Hidden Node i:</strong><br>${calcDetail(inputs[0], weights.W1i, 'age')}<br>${calcDetail(inputs[1], weights.W2i, 'gender')}<br>${calcDetail(inputs[2], weights.W3i, 'income')}<br>Sum = ${sum_i.toFixed(3)}<br>${formula('i', sum_i, out_i)}`, 2);
+      resultHTML += step(`<strong>Output Node:</strong><br>${calcDetail(out_j, weights.Wjk, 'Hj')}<br>${calcDetail(out_i, weights.Wik, 'Hi')}<br>Sum = ${sum_k.toFixed(3)}<br>${formula('k', sum_k, out_k)}`, 3);
+      resultHTML += step(`<strong>Final Prediction:</strong><br>
+Threshold = 0.5 → if output ≥ 0.5 → Predict 1 (Likely to Buy)<br>
+Output = ${out_k.toFixed(3)} → Prediction = ${out_k >= 0.5 ? '✅ Likely to Buy (1)' : '❌ Unlikely to Buy (0)'}${out_k >= 0.5 ? '✅ Likely to Buy (1)' : '❌ Unlikely to Buy (0)'}`, 4);
+
       resultHTML += `</div>`;
-
       document.getElementById("output").innerHTML = resultHTML;
     }
-
-    showActivationDescription(); // Load description on page load
+    showActivationDescription();
   </script>
 </body>
 </html>
